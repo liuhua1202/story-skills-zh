@@ -21,12 +21,17 @@
   ],
   "scripts": {
     "build:fallback": "bun build ./bin/story.js --target=node --outfile=skills/story-maintenance/scripts/story.js",
+    "build:fallback:node": "node scripts/rebuild-fallback.js",
     "check:metadata": "node scripts/check-metadata.js",
     "check:fallback": "node scripts/check-fallback.js",
+    "check:skills": "node scripts/check-skill-consistency.mjs",
+    "test": "bun test test/*.test.js && bun run check:skills",
+    "test:cjk": "node scripts/smoke-cjk.js",
+    "test:bad-zh": "node scripts/test-bad-zh.mjs",
     "test:examples": "node scripts/check-examples.js",
     "story": "bun run ./bin/story.js",
-    "test": "bun test test/*.test.js",
-    "test:coverage": "bun test test/*.test.js --coverage --coverage-reporter=lcov --coverage-dir=coverage && node scripts/check-coverage.js coverage/lcov.info src && bun run check:fallback"
+    "test:coverage": "bun test test/*.test.js --coverage --coverage-reporter=lcov --coverage-dir=coverage && node scripts/check-coverage.js coverage/lcov.info src && bun run check:fallback",
+    "prepublishOnly": "bun run check:metadata && bun run check:fallback && bun run test:examples && bun run check:skills"
   },
   "keywords": [
     "story",

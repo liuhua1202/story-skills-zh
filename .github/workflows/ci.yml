@@ -34,6 +34,9 @@ jobs:
       - name: Check release metadata
         run: bun run check:metadata
 
+      - name: Check skill consistency (frontmatter / links / version / calls)
+        run: bun run check:skills
+
       - name: Run tests
         run: bun run test
 
