@@ -214,6 +214,12 @@ export function assertSafeProjectPathCli(target, root, lang = "en") {
   return resolvedTarget;
 }
 
+// Back-compat alias: cjk.test.js (and any external consumer) imports
+// assertSafeProjectPath, the name documented in CHANGELOG and called out
+// in test fixtures. Keep both names so the upstream test suite keeps passing
+// while the CLI continues to use the explicit ...Cli variant.
+export const assertSafeProjectPath = assertSafeProjectPathCli;
+
 export function atomicWriteFile(filePath, contents, encoding = "utf8") {
   const directory = path.dirname(filePath);
   fs.mkdirSync(directory, { recursive: true });
@@ -455,15 +461,18 @@ export function kebabCase(value) {
         if (/[\u3400-\u9fff\uf900-\ufaff]/.test(char)) {
           const pinyin = cjkToPinyin(char);
           if (pinyin) {
-            return pinyin;
+            // Prepend separator so each Han char contributes its own
+            // pinyin segment (e.g., wang-you rather than wangyou).
+            // The collapse + trim below normalises any extra separators.
+            return '-' + pinyin;
           }
           allMapped = false;
         }
-        return "";
+        return "-";
       })
       .join("");
     if (allMapped) {
-      const ascii = transliterated.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      const ascii = transliterated.replace(/-+/g, "-").replace(/^-+|-+$/g, "");
       if (ascii) {
         return ascii;
       }
@@ -611,11 +620,11 @@ const DIAGNOSTICS = {
     diagMissingFrontmatterField: (file, field) => `${file} is missing frontmatter field ${field}`,
     diagFilenameNotKebab: (file) => `${file} filename id must be kebab-case`,
     diagBadEnumValue: (file, field, value) => `${file} frontmatter field ${field} has unsupported value ${value}`,
-        diagMustBeInteger: (file, field) => `${file} frontmatter field ${field} must be an integer`,
+    diagMustBeInteger: (file, field) => `${file} frontmatter field ${field} must be an integer`,
     diagFieldRelationshipsMustBeList: (file) => `${file} frontmatter field relationships must be a list`,
     diagFieldRelationshipsMustBeObjects: (file) => `${file} frontmatter field relationships must contain objects`,
     diagMustBeMapping: (entry) => `${entry} must be a mapping`,
-diagMustBeScalar: (file, field) => `${file} frontmatter field ${field} must be a scalar`,
+    diagMustBeScalar: (file, field) => `${file} frontmatter field ${field} must be a scalar`,
     diagMustBeList: (file, field) => `${file} frontmatter field ${field} must be a list`,
     diagListItemNotString: (file, field) => `${file} frontmatter field ${field} must contain only non-empty strings`,
     diagListItemNotObject: (file, field) => `${file} frontmatter field ${field} must contain objects`,
@@ -690,11 +699,11 @@ diagMustBeScalar: (file, field) => `${file} frontmatter field ${field} must be a
     diagMissingFrontmatterField: (file, field) => `${file} 缺少 frontmatter 字段：${field}`,
     diagFilenameNotKebab: (file) => `${file} 文件名 id 必须是 kebab-case`,
     diagBadEnumValue: (file, field, value) => `${file} 的 frontmatter 字段 ${field} 取了不支持的值：${value}`,
-        diagMustBeInteger: (file, field) => `${file} 的 frontmatter 字段 ${field} 必须是整数`,
+    diagMustBeInteger: (file, field) => `${file} 的 frontmatter 字段 ${field} 必须是整数`,
     diagFieldRelationshipsMustBeList: (file) => `${file} 的 frontmatter 字段 relationships 必须是列表`,
     diagFieldRelationshipsMustBeObjects: (file) => `${file} 的 frontmatter 字段 relationships 必须包含对象`,
     diagMustBeMapping: (entry) => `${entry} 必须是映射（mapping）`,
-diagMustBeScalar: (file, field) => `${file} 的 frontmatter 字段 ${field} 必须是标量`,
+    diagMustBeScalar: (file, field) => `${file} 的 frontmatter 字段 ${field} 必须是标量`,
     diagMustBeList: (file, field) => `${file} 的 frontmatter 字段 ${field} 必须是列表`,
     diagListItemNotString: (file, field) => `${file} 的 frontmatter 字段 ${field} 只能包含非空字符串`,
     diagListItemNotObject: (file, field) => `${file} 的 frontmatter 字段 ${field} 必须包含对象`,
@@ -1756,7 +1765,7 @@ export function computeWordCounts(root, options = {}) {
 export function exportManuscript(root, options = {}, lang = "en") {
   const project = scanProject(root);
   if (project.chapters.length === 0) {
-    throw new Error(t(lang, "noChaptersExport"));
+    throw new Error(t(currentLang(), "noChaptersExport"));
   }
 
   const output = resolveOutputPath(project, options.out, "manuscript.md", options.enforceRoot);
@@ -1864,7 +1873,7 @@ export function renameEntity(root, options, lang = "en") {
   const config = entityConfig(kind);
   const oldFile = path.join(project.root, config.dir, `${oldId}.md`);
   requireKebabId(oldId, `${kind} id`, lang);
-  assertSafeProjectPath(oldFile, project.root, lang);
+  src_story_js_assertSafeProjectPath(oldFile, project.root, lang);
   if (!fs.existsSync(oldFile)) {
     throw new Error(t(lang, "entityNotFound", kind, oldId));
   }
@@ -1872,7 +1881,7 @@ export function renameEntity(root, options, lang = "en") {
   const markdown = readMarkdown(oldFile, project.root);
   const newId = kind === "chapter" ? oldId : kebabCase(name);
   const newFile = path.join(project.root, config.dir, `${newId}.md`);
-  assertSafeProjectPath(newFile, project.root, lang);
+  src_story_js_assertSafeProjectPath(newFile, project.root, lang);
   if (newFile !== oldFile && fs.existsSync(newFile)) {
     throw new Error(t(lang, "entityAlreadyExists", `${kind} ${newId}`));
   }
@@ -1899,7 +1908,7 @@ export function removeEntity(root, options, lang = "en") {
   const config = entityConfig(kind);
   const file = path.join(project.root, config.dir, `${id}.md`);
   requireKebabId(id, `${kind} id`, lang);
-  assertSafeProjectPath(file, project.root, lang);
+  src_story_js_assertSafeProjectPath(file, project.root, lang);
   if (!fs.existsSync(file)) {
     throw new Error(t(lang, "entityNotFound", kind, id));
   }
@@ -2250,7 +2259,7 @@ function buildEntity(project, kind, name, options) {
 
   if (kind === "scene") {
     const chapter = String(options.chapter ?? project.chapters.at(-1)?.id ?? "chapter-01").trim();
-    requireKebabId(chapter, "chapter id", lang);
+    requireKebabId(chapter, "chapter id", currentLang());
     const scene = Number(options.scene ?? nextSceneNumber(project, chapter));
     const id = `${chapter}-scene-${String(scene).padStart(2, "0")}`;
     return entityResult(project, kind, id, sceneFile(name, chapter, scene, options));
@@ -2302,7 +2311,7 @@ function entityConfig(kind) {
   };
   const config = configs[kind];
   if (!config) {
-    throw new Error(t(lang, "invalidKind", kind));
+    throw new Error(t(currentLang(), "invalidKind", kind));
   }
   return config;
 }
@@ -2670,7 +2679,7 @@ function ensureFile(filePath, contents, changed, root) {
     return;
   }
 
-  assertSafeProjectPath(filePath, root, lang);
+  src_story_js_assertSafeProjectPath(filePath, root, currentLang());
 }
 
 function replaceEntityReferences(root, oldId, newId) {
@@ -2723,7 +2732,7 @@ function addFrontmatterListValue(root, relativePath, field, value) {
     return;
   }
 
-  assertSafeProjectPath(filePath, root, currentLang);
+  src_story_js_assertSafeProjectPath(filePath, root, currentLang);
   const markdown = readMarkdown(filePath, root);
   const list = asArray(markdown.data[field]);
   if (!list.includes(value)) {
@@ -2768,7 +2777,7 @@ function markdownFiles(root) {
 
 function manuscriptParts(project) {
   if (project.chapters.length === 0) {
-    throw new Error(t(lang, "noChaptersExport"));
+    throw new Error(t(currentLang(), "noChaptersExport"));
   }
 
   const chapters = [];
@@ -2973,7 +2982,7 @@ function readEntityFiles(root, relativeDir, mapEntity) {
 
 function readMarkdown(filePath, root) {
   if (root) {
-    assertSafeProjectPath(filePath, root, currentLang);
+    src_story_js_assertSafeProjectPath(filePath, root, currentLang);
   }
   const rawMarkdown = fs.readFileSync(filePath, "utf8");
   const parsed = parseFrontmatter(rawMarkdown, filePath);
@@ -2998,7 +3007,7 @@ function safeRead(filePath, root) {
   }
 
   if (root) {
-    assertSafeProjectPath(filePath, root, currentLang);
+    src_story_js_assertSafeProjectPath(filePath, root, currentLang);
   }
   return fs.readFileSync(filePath, "utf8");
 }
@@ -3030,7 +3039,7 @@ function prepareWriteTarget(filePath, root) {
   return target;
 }
 
-function assertSafeProjectPath(filePath, root, lang = "en") {
+function src_story_js_assertSafeProjectPath(filePath, root, lang = "en") {
   const target = path.resolve(filePath);
   assertLexicallyInsideRoot(target, root, currentLang);
   assertSafeProjectParent(target, root, currentLang);
@@ -3044,18 +3053,18 @@ function assertSafeProjectDirectory(directory, root) {
 
   if (stats) {
     if (stats.isSymbolicLink()) {
-      throw new Error(t(lang, "symlinkRefused", target));
+      throw new Error(t(currentLang(), "symlinkRefused", target));
     }
 
     if (!stats.isDirectory()) {
-      throw new Error(t(lang, "projectNotDir", target));
+      throw new Error(t(currentLang(), "projectNotDir", target));
     }
   }
 
   const rootReal = fs.realpathSync(path.resolve(root));
   const directoryReal = fs.realpathSync(target);
   if (!isPathInside(rootReal, directoryReal)) {
-    throw new Error(t(lang, "projectOutsideRoot", target));
+    throw new Error(t(currentLang(), "projectOutsideRoot", target));
   }
 }
 
@@ -3118,7 +3127,7 @@ function normalizeBuildFormat(value) {
     return format;
   }
 
-  throw new Error(t(lang, "unsupportedFormat", value));
+  throw new Error(t(currentLang(), "unsupportedFormat", value));
 }
 
 function validateStoryFrontmatter(project, errors, lang) {
@@ -3630,7 +3639,7 @@ function readSourceDocuments(source) {
     .map((name) => ({ name, text: fs.readFileSync(path.join(source, name), "utf8") }));
 
   if (documents.length === 0) {
-    throw new Error(t(lang, "noImportFiles", source));
+    throw new Error(t(currentLang(), "noImportFiles", source));
   }
 
   return documents;
@@ -3734,7 +3743,7 @@ ${prose}
 
 export function runCli(argv, io) {
   const parsed = parseArgs(argv);
-  const lang = resolveLang(parsed.options);
+  const lang = resolveLang(parsed.options, process.env);
   setLang(lang);
   const cwd = io.cwd ?? process.cwd();
   const command = parsed.positionals[0];

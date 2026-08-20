@@ -6,6 +6,83 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased] - Chinese-Localized Fork Hardening
 
 
+## [0.3.2] - Skill Structural Refactor
+
+Same upstream CLI surface as 0.3.1; this is the skill (workflow) layer
+restructure. None of these change story CLI commands or file formats.
+
+### Added — skills/common/
+
+Five new files under skills/common/ serve as the canonical home for
+rules that used to be duplicated across multiple SKILL.md bodies:
+
+- cli-priority.md — Story CLI 三种调用方式的优先级 (single source, was
+  duplicated in 6 skills)
+- continuity-audit-checklist.md — 写作前 5 项 + 审计 10 项 + CLI 自动
+  覆盖 (was duplicated in chapter-writing pre-flight and
+  evision-continuity)
+- cross-reference-rules.md — 9 类双向引用规则 + tag 复用约束 (was
+  duplicated in character-management / worldbuilding /
+  plot-structure)
+- id-naming.md — kebab-case / CJK 音译 / CJK fallback / 文件路径约定
+- project-conventions.md — 跨 skill 根约定 (was in
+  story-init only)
+- README.md — modification discipline
+
+### Added — SKILL.md frontmatter schema
+
+Every SKILL.md now declares (in addition to the existing 
+ame and
+description):
+
+- ersion — matches package.json, used as the 4th version pin (the
+  skill layer) alongside the three manifest files
+- llowed-cli — which story ... commands this skill is allowed to
+  invoke
+- scope — write paths / read-mostly / maintenance-only hint
+- calls — skills this skill may hand off to (e.g. chapter-writing
+  → evision-continuity)
+
+description now also includes bilingual English trigger phrases
+(per P1 in the optimization plan).
+
+### Added — workflow checklists
+
+Every SKILL.md opens with a ## 工作流（checklist） section listing
+concrete step boxes (□ 1., □ 2., ...) that survive across the
+conversation. Helps the agent stay oriented in long multi-step runs.
+
+### Changed — duplicated sections collapsed
+
+| Section | Was in | Now lives in |
+| --- | --- | --- |
+| CLI 维护 (short form) | 6 skills | common/cli-priority.md |
+| 跨实体引用 | 3 skills | common/cross-reference-rules.md |
+| 写作前自检 + 连续性审计 10 项 | 2 skills | common/continuity-audit-checklist.md |
+| 跨 skill 通用约定 | story-init only | common/project-conventions.md |
+| kebab-case / CJK 音译 | 5 skills (inline) | common/id-naming.md |
+
+### Added — new references
+
+- skills/revision-continuity/references/revision-plan-template.md
+  — 4-line plan template with three realistic examples
+- skills/story-init/references/mvp-skeleton.md — post-story init
+  回填检查清单
+
+### Added — skill consistency checker
+
+- scripts/check-skill-consistency.mjs — CI guardian that validates
+  frontmatter, link resolution, version alignment, and the call graph
+- Wired into package.json as un run check:skills; runs as part
+  of un run test and un run prepublishOnly
+
+### Fixed — leftover scaffold bug
+
+xamples/yu-ye-zhi-mi/ had been scaffolded before current CLI
+expectations and was missing 3 directories. Added
+worldbuilding/factions/, worldbuilding/artifacts/, glossary/terms/
+(with .gitkeep). Project now passes story validate . cleanly.
+
 The Chinese-localized fork in `story-skills-zh/` ships a hardening patch
 on top of upstream v0.3.1. None of these change the public CLI surface
 or the file-format contract; they only repair bugs and inconsistencies
