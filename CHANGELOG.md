@@ -3,6 +3,63 @@
 All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [Unreleased] - Chinese-Localized Fork Hardening
+
+
+The Chinese-localized fork in `story-skills-zh/` ships a hardening patch
+on top of upstream v0.3.1. None of these change the public CLI surface
+or the file-format contract; they only repair bugs and inconsistencies
+discovered while auditing the mirror.
+
+- **`test/cjk.test.js` import mismatch (upstream bug)**: the test file
+  imports `assertSafeProjectPath`, but `src/security.js` only exported
+  `assertSafeProjectPathCli`. Added a back-compat alias so both names
+  resolve to the same function; the two previously-failing cjk tests
+  now pass.
+
+- **Eight `ReferenceError: lang is not defined` paths**: seven helpers
+  in `src/story.js` (`normalizeBuildFormat`, `entityConfig`,
+  `manuscriptParts`, `buildEntity` scene branch, `ensureFile`,
+  `ensureDirectory`, `assertSafeProjectDirectory`) plus one in
+  `src/import.js` (`readSourceDocuments`) referenced a bare `lang`
+  identifier that was never in scope. Replaced each with
+  `currentLang()` and added the missing `currentLang` import to
+  `import.js`. Errors like `--format pdf` or `add ghost ...` now print
+  friendly bilingual messages instead of stack traces.
+
+- **`STORY_SKILLS_LANG` env var never read**: `cli.js` called
+  `resolveLang(parsed.options)` without passing `process.env`, even
+  though the HELP text documented the variable. Now
+  `resolveLang(parsed.options, process.env)` is used and the env var
+  actually overrides the default language.
+
+- **`kebabCase` joined adjacent Han pinyin without separators**:
+  `王友` produced `wangyou` instead of `wang-you` because the
+  post-processing regex only collapsed non-alphanumeric runs. Each
+  Han pinyin now contributes a leading `-`, the collapse regex is
+  `/-+/g`, and the trim step strips edges. All cjk.test.js
+  expectations pass.
+
+- **`build-diag.js` was missing 4 diagnostic entries**: running the
+  user's codegen at the repo root would silently delete
+  `diagMustBeInteger`, `diagFieldRelationshipsMustBeList`,
+  `diagFieldRelationshipsMustBeObjects`, and `diagMustBeMapping`
+  from `src/diagnostics.js`. Added the 4 missing entries; the
+  regenerated file now matches upstream modulo whitespace.
+
+- **`package.json` declared a `schemas/` directory that did not
+  exist**: created `schemas/.gitkeep` so the `files` declaration
+  becomes accurate.
+
+### Known issues still in this fork
+
+- `examples/yu-ye-zhi-mi/` has a hex hash story id (`cjk-45f1a965`)
+  because the title `雨夜之谜` has no character in the pinyin map.
+  Functional but ugly.
+- `.agents/plugins/marketplace.json` references a `./plugins/story-skills`
+  symlink that does not exist in the working tree; the README says
+  this is intentional and expects the symlink to be created at
+  publish time.
 
 ## [Unreleased] - Hardening Pass
 

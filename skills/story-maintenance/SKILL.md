@@ -52,7 +52,7 @@ story build . --format docx
 - `reindex` —— 新增 / 删除 / 重命名角色、地点、系统、弧、章节之后
 - `wordcount --write` —— 写或修订章节之后
 - `links` —— 改角色关系、notable locations、弧参与者、章节引用之后
-- `continuity` —— 起草或修订章节之后;用户问矛盾、死角色出现、未兑现 setup、过时状态时也跑。它确定性检查:`died-in` 顺序、promise/question 章节顺序、契诃夫缺口、POV/cast 一致性、`continuity/state.md` 引用
+- `continuity` —— 起草或修订章节之后;用户问矛盾、死角色出现、未兑现伏笔、过时状态时也跑。它确定性检查:`died-in` 顺序、承诺/悬念 章节顺序、契诃夫之枪、POV/cast 一致性、`continuity/state.md` 引用
 - `import` —— 用户有现成稿件或章节草稿、想围绕它建 Story Skills 项目时;跑完根据打印出的实体候选清单把角色和地点文件补上
 - `report` —— 用户问项目状态、清单、进度、或者想要个快速健康总览时
 - `next` —— 起草前看 CLI 给的确定性下一步

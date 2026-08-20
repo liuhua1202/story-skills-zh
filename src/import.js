@@ -3,7 +3,7 @@ import path from "node:path";
 import { stringifyFrontmatter } from "./frontmatter.js";
 import { titleCaseSlug, wordCount } from "./markdown.js";
 import { createStoryProject, reindexProject } from "./story.js";
-import { t } from "./i18n.js";
+import { t, getLang as currentLang } from "./i18n.js";
 
 const CHAPTER_HEADING_PATTERN = /^chapter\s*(?:\d+|[ivxlc]+)?\s*[:.\-–—]*\s*(.*)$/i;
 const FRONTMATTER_PATTERN = /^---\r?\n[\s\S]*?\r?\n---\r?\n?/;
@@ -117,7 +117,7 @@ function readSourceDocuments(source) {
     .map((name) => ({ name, text: fs.readFileSync(path.join(source, name), "utf8") }));
 
   if (documents.length === 0) {
-    throw new Error(t(lang, "noImportFiles", source));
+    throw new Error(t(currentLang(), "noImportFiles", source));
   }
 
   return documents;

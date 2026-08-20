@@ -27,7 +27,7 @@ import {
 
 export function runCli(argv, io) {
   const parsed = parseArgs(argv);
-  const lang = resolveLang(parsed.options);
+  const lang = resolveLang(parsed.options, process.env);
   setLang(lang);
   const cwd = io.cwd ?? process.cwd();
   const command = parsed.positionals[0];

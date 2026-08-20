@@ -112,7 +112,7 @@ story add artifact "{Artifact Name}" \
 - **历史与历任持有者**
 - **当前持有者 / 位置 / 状态**
 
-�️ 道具的 `status` 字段必须与 `continuity/state.md` 的 `object-state[].status` **保持一致**——被销毁的道具不能继续出现在 active 场景里，`story continuity .` 会校验。
+⚠️ 道具的 `status` 字段必须与 `continuity/state.md` 的 `object-state[].status` **保持一致**——被销毁的道具不能继续出现在 active 场景里，`story continuity .` 会校验。
 
 ---
 

@@ -53,6 +53,12 @@ export function assertSafeProjectPathCli(target, root, lang = "en") {
   return resolvedTarget;
 }
 
+// Back-compat alias: cjk.test.js (and any external consumer) imports
+// assertSafeProjectPath, the name documented in CHANGELOG and called out
+// in test fixtures. Keep both names so the upstream test suite keeps passing
+// while the CLI continues to use the explicit ...Cli variant.
+export const assertSafeProjectPath = assertSafeProjectPathCli;
+
 export function atomicWriteFile(filePath, contents, encoding = "utf8") {
   const directory = path.dirname(filePath);
   fs.mkdirSync(directory, { recursive: true });

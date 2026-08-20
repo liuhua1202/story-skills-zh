@@ -16,7 +16,7 @@ Story Skills 是一套用 markdown 驱动虚构作品写作的 Agent 技能集 +
 - **技能（skills/）**：7 个 `SKILL.md`，指导 Agent 在不同阶段做什么。
 - **CLI（bin/, src/）**：Bun/Node 工具，确定性地维护项目（校验、索引、字数、链接、连续性、导出）。
 - **数据契约（docs/schema-v2.md）**：所有故事实体都是带 YAML frontmatter 的 markdown 文件，跨技能双向引用。
-- **示例（examples/）**：3 个完整故事项目（一个奇幻、一个近未来悬疑、一个故意写崩用来演示连续性检查）。
+- **示例（examples/）**：4 个完整故事项目——`the-last-ember`（奇幻）、`harbor-of-second-light`（近未来海岸悬疑）、`the-unraveled-thread`（故意写崩演示连续性检查）、`yu-ye-zhi-mi`（中文原创悬疑《雨夜之谜》）。
 
 CLI 把"故事圣经"当作可校验的契约，专门捕获**长程一致性错误**——这是普通 LLM 提示词搞不定、但能靠 frontmatter + 校验脚本确定性地搞定的部分（死角色复活、伏笔兑现早于埋设、契诃夫之枪未开火、过期状态等）。
 

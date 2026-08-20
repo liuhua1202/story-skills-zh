@@ -30,7 +30,7 @@ description: 当用户说「修订一章」「编辑正文」「连续性检查�
 - 存在时,前后章节
 - 章节 frontmatter 引用的角色、地点、系统、弧文件
 - 对应的 `scenes/` 场景文件
-- `continuity/state.md`、open questions、promises / payoffs
+- `continuity/state.md`、悬念记录、伏笔承诺
 - 对连续性敏感的修订,还要看 `plot/timeline.md` 和进行中的弧文件
 
 ### 3. 写一份简短的修订计划
@@ -64,7 +64,7 @@ story continuity .
 story doctor .
 ```
 
-`story continuity` 确定性检查:死亡顺序(`died-in` vs 后续出场)、promise/question 章节顺序、未兑现的 setup、POV / 角色一致性、`continuity/state.md` 的引用。故意做的闪回、回忆、死者录音,放在章节或场景的 `mentions` 而不是 `characters` 里。
+`story continuity` 确定性检查:死亡顺序(`died-in` vs 后续出场)、承诺/悬念 章节顺序、未兑现的伏笔、POV / 角色一致性、`continuity/state.md` 的引用。故意做的闪回、回忆、死者录音,放在章节或场景的 `mentions` 而不是 `characters` 里。
 
 如果 `story` 没装,在本仓库用 `bun run story --`,或者用 bundled `story-maintenance/scripts/story.js`。
 
@@ -77,9 +77,9 @@ story doctor .
 - **时间线** —— 时间段、旅途时长、先后顺序、因果保持一致
 - **情节弧** —— 改动后每个场景仍然在推进或有意暂停某条弧
 - **伏笔** —— 已埋和已兑现的条目跟弧文件对得上
-- **Promises / questions** —— 长效连续性记录跟章节现在揭示或保留的东西吻合
+- **承诺 / 悬念** —— 长效连续性记录跟章节现在揭示或保留的东西吻合
 - **场景状态** —— 每个章节场景都有机读的 POV、地点、参与者、弧、状态变化记录
-- **世界规则** —— 魔法、科技、政治、地理跟 worldview 文件一致
+- **世界规则** —— 魔法、科技、政治、地理跟 worldbuilding 文件一致
 - **引用** —— 章节 frontmatter 列出所有推进的主要角色、地点、弧
 - **注册表** —— 编辑完,索引、字数、链接都还是新的
 

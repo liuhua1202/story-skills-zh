@@ -147,7 +147,7 @@ story reindex .    # 重建所有 _index.md
 
 **不做**：
 - 不会修改任何业务字段
-- 不会重建 `characters/_index.md` 之外的文件
+- 重建所有 `_index.md` 注册表（characters / worldbuilding / plot / chapters / scenes / continuity/questions / continuity/promises / glossary 共 8 个），不碰 `plot/timeline.md` 与 `continuity/state.md`
 - 写入是**原子**的（temp + rename），中途崩溃不会留半截文件
 
 ---

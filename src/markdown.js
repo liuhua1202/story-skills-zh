@@ -15,15 +15,18 @@ export function kebabCase(value) {
         if (/[\u3400-\u9fff\uf900-\ufaff]/.test(char)) {
           const pinyin = cjkToPinyin(char);
           if (pinyin) {
-            return pinyin;
+            // Prepend separator so each Han char contributes its own
+            // pinyin segment (e.g., wang-you rather than wangyou).
+            // The collapse + trim below normalises any extra separators.
+            return '-' + pinyin;
           }
           allMapped = false;
         }
-        return "";
+        return "-";
       })
       .join("");
     if (allMapped) {
-      const ascii = transliterated.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      const ascii = transliterated.replace(/-+/g, "-").replace(/^-+|-+$/g, "");
       if (ascii) {
         return ascii;
       }

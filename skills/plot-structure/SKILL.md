@@ -78,7 +78,7 @@ description: 当用户说「创建情节弧」「故事结构」「加一个情�
 
 写章节时,把状态还是 `planted`、但还没兑现的条目挑出来当提醒。
 
-跨弧的长效 setup / payoff 追踪,统一维护在 `continuity/promises/{promise-kebab}.md`,字段:`status`、`planted`、`payoff`、`arcs`、`characters`。悬念或开放连续性的追踪放在 `continuity/questions/{question-kebab}.md`。
+跨弧的长效伏笔承诺追踪,统一维护在 `continuity/promises/{promise-kebab}.md`,字段:`status`、`planted`、`payoff`、`arcs`、`characters`。悬念或开放连续性的追踪放在 `continuity/questions/{question-kebab}.md`。
 
 ## 跨实体引用
 

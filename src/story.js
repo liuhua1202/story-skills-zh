@@ -727,7 +727,7 @@ export function computeWordCounts(root, options = {}) {
 export function exportManuscript(root, options = {}, lang = "en") {
   const project = scanProject(root);
   if (project.chapters.length === 0) {
-    throw new Error(t(lang, "noChaptersExport"));
+    throw new Error(t(currentLang(), "noChaptersExport"));
   }
 
   const output = resolveOutputPath(project, options.out, "manuscript.md", options.enforceRoot);
@@ -1221,7 +1221,7 @@ function buildEntity(project, kind, name, options) {
 
   if (kind === "scene") {
     const chapter = String(options.chapter ?? project.chapters.at(-1)?.id ?? "chapter-01").trim();
-    requireKebabId(chapter, "chapter id", lang);
+    requireKebabId(chapter, "chapter id", currentLang());
     const scene = Number(options.scene ?? nextSceneNumber(project, chapter));
     const id = `${chapter}-scene-${String(scene).padStart(2, "0")}`;
     return entityResult(project, kind, id, sceneFile(name, chapter, scene, options));
@@ -1273,7 +1273,7 @@ function entityConfig(kind) {
   };
   const config = configs[kind];
   if (!config) {
-    throw new Error(t(lang, "invalidKind", kind));
+    throw new Error(t(currentLang(), "invalidKind", kind));
   }
   return config;
 }
@@ -1641,7 +1641,7 @@ function ensureFile(filePath, contents, changed, root) {
     return;
   }
 
-  assertSafeProjectPath(filePath, root, lang);
+  assertSafeProjectPath(filePath, root, currentLang());
 }
 
 function replaceEntityReferences(root, oldId, newId) {
@@ -1739,7 +1739,7 @@ function markdownFiles(root) {
 
 function manuscriptParts(project) {
   if (project.chapters.length === 0) {
-    throw new Error(t(lang, "noChaptersExport"));
+    throw new Error(t(currentLang(), "noChaptersExport"));
   }
 
   const chapters = [];
@@ -2015,18 +2015,18 @@ function assertSafeProjectDirectory(directory, root) {
 
   if (stats) {
     if (stats.isSymbolicLink()) {
-      throw new Error(t(lang, "symlinkRefused", target));
+      throw new Error(t(currentLang(), "symlinkRefused", target));
     }
 
     if (!stats.isDirectory()) {
-      throw new Error(t(lang, "projectNotDir", target));
+      throw new Error(t(currentLang(), "projectNotDir", target));
     }
   }
 
   const rootReal = fs.realpathSync(path.resolve(root));
   const directoryReal = fs.realpathSync(target);
   if (!isPathInside(rootReal, directoryReal)) {
-    throw new Error(t(lang, "projectOutsideRoot", target));
+    throw new Error(t(currentLang(), "projectOutsideRoot", target));
   }
 }
 
@@ -2089,7 +2089,7 @@ function normalizeBuildFormat(value) {
     return format;
   }
 
-  throw new Error(t(lang, "unsupportedFormat", value));
+  throw new Error(t(currentLang(), "unsupportedFormat", value));
 }
 
 function validateStoryFrontmatter(project, errors, lang) {

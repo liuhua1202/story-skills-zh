@@ -90,7 +90,7 @@ bunx skills add forjd/better-writing
 
 Story Skills 单独也能用，但章节起草与修订在搭配 `better-writing` 时效果更好。
 
-## � 安装
+## 📦 安装
 
 <details>
 <summary><strong>Codex</strong></summary>
@@ -175,7 +175,7 @@ story continuity
 
 CLI 是可选的。技能本身也能工作，但 CLI 能把维护工作自动化。详见 [`docs/first-20-minutes.md`](docs/first-20-minutes.md)。
 
-## � 验证（Sanity Check）
+## ✅ 验证（Sanity Check）
 
 任何修改后都跑一遍：
 
@@ -396,7 +396,7 @@ Copy each subdirectory of `skills/` into your agent's skills directory.
 
 </details>
 
-## � Skills
+## 🧱 Skills
 
 | Skill | Purpose |
 | --- | --- |
@@ -408,7 +408,7 @@ Copy each subdirectory of `skills/` into your agent's skills directory.
 | `revision-continuity` | Revision and continuity audit, catches contradictions |
 | `story-maintenance` | CLI commands and project maintenance toolkit |
 
-## �️ Companion CLI
+## 🛠️ Companion CLI
 
 Skills guide creative workflows; the CLI handles mechanical maintenance: validation, registry rebuilds, word counts, link checks, exports, and disposable builds.
 
