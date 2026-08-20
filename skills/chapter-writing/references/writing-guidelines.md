@@ -1,3 +1,15 @@
+<!--
+Prose craft guidelines (散文工艺守则)
+Last reviewed against forjd/better-writing skill / 上次比对 better-writing：
+  upstream HEAD: <sync with forjd/better-writing main periodically>
+  review-date: 2026-08-21
+  reviewer: story-skills-zh maintainer
+
+When better-writing upstream changes materially, refresh this file:
+1. Clone https://github.com/forjd/better-writing
+2. Compare sections / 反 Tells / POV / Dialogue / Sensory / Continuity
+3. Update entry-by-entry, keep this comment in sync with new date/commit
+-->
 # 散文工艺守则（Writing Guidelines）
 
 写章节正文时的散文工艺指南。具体语域、口吻、节奏密度以 `story.md` 中登记的 `genre` / `tone` / `pov` / `tense` 为准——这里给出的是**通用底线**，写奇幻、悬疑、言情、硬科幻都需要遵守的最小公约数。
