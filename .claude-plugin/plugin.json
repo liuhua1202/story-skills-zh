@@ -1,0 +1,10 @@
+{
+  "name": "story-skills",
+  "version": "0.3.1",
+  "description": "A suite of cross-referenced skills and CLI maintenance tools for end-to-end story writing powered by markdown. Covers story initialization, character management, worldbuilding, plot structure, chapter writing, revision, validation, reporting, indexing, word counts, and manuscript export. / 一套互相引用的技能与 CLI 维护工具，用 markdown 端到端支撑故事写作。覆盖故事初始化、角色管理、世界观、情节结构、章节写作、修订、校验、报告、索引、字数统计与稿件导出。",
+  "author": {
+    "name": "Daniel Dewhurst"
+  },
+  "license": "MIT",
+  "keywords": ["story", "writing", "fiction", "characters", "worldbuilding", "chapters", "revision", "故事", "写作", "小说", "角色", "世界观", "章节", "修订"]
+}

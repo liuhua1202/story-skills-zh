@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    name: Test (${{ matrix.os }}, Node ${{ matrix.node }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node: ["18", "20", "22"]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Set up Node.js ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Check release metadata
+        run: bun run check:metadata
+
+      - name: Run tests
+        run: bun run test
+
+      - name: Run coverage and fallback checks
+        run: bun run test:coverage
+
+      - name: Validate examples
+        run: bun run test:examples
+
+      - name: Check bundled fallback under Node
+        run: node skills/story-maintenance/scripts/story.js --help
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - name: Install dependencies
+        run: bun install
+      - name: Lint JavaScript
+        run: |
+          if [ -f .eslintrc.json ]; then
+            bun x eslint --max-warnings=0 "src/**/*.js" "bin/*.js" "scripts/*.js" "test/*.js"
+          fi
+      - name: Check formatting
+        run: |
+          if [ -f .prettierrc ]; then
+            bun x prettier --check "**/*.{js,json,md,yml,yaml}"
+          fi
