@@ -181,6 +181,65 @@ function checkCommonDir() {
   }
 }
 
+
+// === Layer 3 heuristics: content quality checks ===
+//
+// These heuristics check that each SKILL.md has the *shape* of a complete,
+// useful skill description — not just structural validity.  They are softer
+// than the structural checks above (they emit warnings, not errors) because
+// they are heuristics, not invariants.
+
+function checkContentHeuristics(skill) {
+  const text = fs.readFileSync(skill.skillPath, "utf8");
+  const meta = readFrontmatter(text);
+  if (!meta) return;
+  const desc = String(meta.description || "");
+
+  // H1: bilingual — has Han characters (zh)
+  if (!/[\u3400-\u9fff]/.test(desc)) {
+    fail(skill.name, "[H1] description has no Chinese (Han) trigger words");
+  }
+  // H2: bilingual — has Latin characters forming words (en)
+  if (!/[A-Za-z]{4,}/.test(desc)) {
+    fail(skill.name, "[H2] description has no English trigger words (no Latin word ≥4 letters)");
+  }
+  // H3: length — too short looks lazy, too long indicates scope creep
+  if (desc.length < 60) {
+    fail(skill.name, `[H3] description too short (${desc.length} chars, min 60)`);
+  }
+  if (desc.length > 1500) {
+    warn(skill.name, `[H3] description very long (${desc.length} chars, recommend ≤1500)`);
+  }
+  // H4: each skill should reference the common/ canon at least once
+  if (!text.includes("../common/")) {
+    fail(skill.name, "[H4] SKILL.md has no ../common/ reference (drift risk)");
+  }
+  // H5: workflow checklist must have at least 3 steps (□ 1. ... □ 2. ...)
+  const checklistSteps = (text.match(/□\s*\d+\./g) || []).length;
+  if (checklistSteps < 3) {
+    fail(skill.name, `[H5] workflow checklist has ${checklistSteps} steps (need ≥3)`);
+  }
+}
+
+function checkTermConsistency(skills) {
+  // H6: certain critical terms must appear in canonical form wherever used
+  const canonicalForms = [
+    { term: "died-in",     wrongPatterns: [/died in/i] },
+    { term: "mentions",    wrongPatterns: [/\\bmention\\b/i] },     // bare "mention" vs canonical list-field name "mentions"
+    { term: "kebab-case",  wrongPatterns: [/kebab case/i, /kebab_case/i] },
+    { term: "schema-version", wrongPatterns: [/schema version(?! v2)/i] }, // "schema version" without a number is suspicious
+  ];
+  for (const s of skills) {
+    const text = fs.readFileSync(s.skillPath, "utf8");
+    for (const c of canonicalForms) {
+      for (const wrong of c.wrongPatterns) {
+        if (wrong.test(text)) {
+          warn(s.name, `[H6] uses non-canonical "${wrong}" — prefer canonical form "${c.term}"`);
+        }
+      }
+    }
+  }
+}
 // === main ===
 const pkg = JSON.parse(fs.readFileSync(PKG_PATH, "utf8"));
 const pkgVersion = pkg.version;
@@ -196,6 +255,10 @@ for (const s of skills) {
 }
 checkCallGraph(skills, byName);
 checkCalledByInverse(skills, byName);
+
+// Layer 3 heuristics
+for (const s of skills) checkContentHeuristics(s);
+checkTermConsistency(skills);
 
 // output
 const summary = [];
