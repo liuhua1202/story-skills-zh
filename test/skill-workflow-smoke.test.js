@@ -160,7 +160,7 @@ describe("Layer 2: chapter-writing workflow", () => {
     expect(invoke(cwd, ["next", root]).code).toBe(0);
 
     // Verify scene file has the right structure (chapter-writing 4-step says scene frontmatter required)
-    const scenePath = path.join(root, "scenes", "chapter-01-scene-1.md");
+    const scenePath = path.join(root, "scenes", "chapter-01-scene-01.md");
     expect(fs.existsSync(scenePath)).toBe(true);
     const sceneFm = fs.readFileSync(scenePath, "utf8");
     expect(sceneFm).toMatch(/^chapter:\s+chapter-01/m);
