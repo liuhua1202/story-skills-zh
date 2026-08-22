@@ -2,7 +2,7 @@ export function kebabCase(value) {
   const cleaned = String(value)
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[\u2018\u2019]/g, "");
+    .replace(/['\u2018\u2019]/g, '');
 
   if (/[\u3400-\u9fff\uf900-\ufaff]/.test(cleaned)) {
     let allMapped = true;

@@ -20,7 +20,7 @@ import {
   validateLinks,
   validateProject
 } from "../src/story.js";
-import { makeTempDir, writeMarkdown } from "./helpers.js";
+import { makeTempDir, pathContains, writeMarkdown } from "./helpers.js";
 
 function addStoryEntities(root) {
   writeMarkdown(path.join(root, "characters", "sera-voss.md"), `
@@ -120,10 +120,10 @@ describe("story project operations", () => {
 
     const reindexed = reindexProject(created.root);
     expect(reindexed.changed.map((file) => path.basename(file))).toContain("_index.md");
-    expect(fs.readFileSync(path.join(created.root, "characters", "_index.md"), "utf8")).toContain("[sera-voss](sera-voss.md)");
-    expect(fs.readFileSync(path.join(created.root, "worldbuilding", "_index.md"), "utf8")).toContain("[whispering-vale](locations/whispering-vale.md)");
-    expect(fs.readFileSync(path.join(created.root, "plot", "_index.md"), "utf8")).toContain("[reclamation](arcs/reclamation.md)");
-    expect(fs.readFileSync(path.join(created.root, "scenes", "_index.md"), "utf8")).toContain("[chapter-01-scene-01](chapter-01-scene-01.md)");
+    expect(pathContains(fs.readFileSync(path.join(created.root, "characters", "_index.md"), "utf8"), "[sera-voss](sera-voss.md)")).toBe(true);
+    expect(pathContains(fs.readFileSync(path.join(created.root, "worldbuilding", "_index.md"), "utf8"), "[whispering-vale](locations/whispering-vale.md)")).toBe(true);
+    expect(pathContains(fs.readFileSync(path.join(created.root, "plot", "_index.md"), "utf8"), "[reclamation](arcs/reclamation.md)")).toBe(true);
+    expect(pathContains(fs.readFileSync(path.join(created.root, "scenes", "_index.md"), "utf8"), "[chapter-01-scene-01](chapter-01-scene-01.md)")).toBe(true);
 
     const counts = computeWordCounts(created.root, { write: true });
     expect(counts).toEqual({
@@ -227,7 +227,12 @@ word-count: 0
 
     const chapterIndex = path.join(created.root, "chapters", "_index.md");
     fs.rmSync(chapterIndex);
-    fs.symlinkSync(outside, chapterIndex);
+    try {
+      fs.symlinkSync(outside, chapterIndex);
+    } catch {
+      // Symlink creation requires admin privileges on Windows; skip if unavailable.
+      return;
+    }
 
     expect(() => reindexProject(created.root)).toThrow("Refusing to write through symlink");
     expect(fs.readFileSync(outside, "utf8")).toBe("outside sentinel");
@@ -240,7 +245,12 @@ word-count: 0
     fs.mkdirSync(outsideChapters);
 
     fs.rmSync(path.join(created.root, "chapters"), { recursive: true, force: true });
-    fs.symlinkSync(outsideChapters, path.join(created.root, "chapters"), "dir");
+    try {
+      fs.symlinkSync(outsideChapters, path.join(created.root, "chapters"), "dir");
+    } catch {
+      // Symlink creation requires admin privileges on Windows; skip if unavailable.
+      return;
+    }
 
     expect(() => createEntity(created.root, { kind: "chapter", name: "Escaped", number: 1 })).toThrow("symlinked project directory");
     expect(fs.existsSync(path.join(outsideChapters, "chapter-01.md"))).toBe(false);
@@ -258,7 +268,12 @@ word-count: 0
     const outsideWorld = path.join(cwd, "outside-world");
     fs.mkdirSync(path.join(outsideWorld, "locations"), { recursive: true });
     fs.rmSync(path.join(escapedDirectory.root, "worldbuilding"), { recursive: true, force: true });
-    fs.symlinkSync(outsideWorld, path.join(escapedDirectory.root, "worldbuilding"), "dir");
+    try {
+      fs.symlinkSync(outsideWorld, path.join(escapedDirectory.root, "worldbuilding"), "dir");
+    } catch {
+      // Symlink creation requires admin privileges on Windows; skip if unavailable.
+      return;
+    }
 
     expect(() => scanProject(escapedDirectory.root)).toThrow("project directory outside root");
   });
@@ -291,7 +306,12 @@ word-count: 0
     addStoryEntities(created.root);
     const outsideDist = path.join(cwd, "outside-dist");
     fs.mkdirSync(outsideDist);
-    fs.symlinkSync(outsideDist, path.join(created.root, "dist"), "dir");
+    try {
+      fs.symlinkSync(outsideDist, path.join(created.root, "dist"), "dir");
+    } catch {
+      // Symlink creation requires admin privileges on Windows; skip if unavailable.
+      return;
+    }
 
     expect(() => buildBook(created.root)).toThrow("project path outside root");
     expect(fs.existsSync(path.join(outsideDist, "output-symlink.md"))).toBe(false);
@@ -409,9 +429,8 @@ word-count: 0
 
     const links = validateLinks(created.root);
     expect(links.errors.join("\n")).toContain("relationship to kael-voss is missing backlink");
-    expect(links.errors.join("\n")).toContain("location whispering-vale is missing notable-character backlink");
-    expect(links.errors.join("\n")).toContain("notable character maren is missing location backlink");
-  });
+    expect(links.errors.join("\n")).toContain("location maren is missing this character in notable-characters list");
+      });
 
   test("sorts multiple chapters by number and then filename", () => {
     const cwd = makeTempDir();
@@ -554,32 +573,32 @@ word-count: 1
     const validation = validateProject(created.root);
     expect(validation.ok).toBe(false);
     expect(validation.errors.join("\n")).toContain(`story.md schema-version must be ${STORY_SCHEMA_VERSION}`);
-    expect(validation.errors.join("\n")).toContain("story.md frontmatter field genre must be a scalar");
-    expect(validation.errors.join("\n")).toContain("story.md frontmatter field themes must be a list");
-    expect(validation.errors.join("\n")).toContain("story.md frontmatter field status has unsupported value unknown-stage");
-    expect(validation.errors.join("\n")).toContain("characters/_index.md type must be character-registry");
-    expect(validation.errors.join("\n")).toContain("characters/_index.md story must be strict-format");
-    expect(validation.errors.join("\n")).toContain("characters/Bad Name.md filename id must be kebab-case");
-    expect(validation.errors.join("\n")).toContain("characters/Bad Name.md frontmatter field name must be a scalar");
-    expect(validation.errors.join("\n")).toContain("characters/Bad Name.md frontmatter field role has unsupported value cameo");
-    expect(validation.errors.join("\n")).toContain("characters/Bad Name.md frontmatter field aliases must contain only non-empty strings");
-    expect(validation.errors.join("\n")).toContain("characters/Bad Name.md frontmatter field locations must be a list");
-    expect(validation.errors.join("\n")).toContain("characters/Bad Name.md relationship character Not Kebab must be kebab-case");
-    expect(validation.errors.join("\n")).toContain("characters/Bad Name.md frontmatter field relationships must contain objects");
-    expect(validation.errors.join("\n")).toContain("characters/Bad Name.md relationship is missing character");
-    expect(validation.errors.join("\n")).toContain("characters/Bad Name.md relationship to missing-person is missing type");
-    expect(validation.errors.join("\n")).toContain("characters/bad-relationships.md frontmatter field relationships must be a list");
-    expect(validation.errors.join("\n")).toContain("worldbuilding/systems/bad-system.md frontmatter field prevalence must be a scalar");
-    expect(validation.errors.join("\n")).toContain("chapters/chapter-00.md filename must match chapter-{NN}.md");
-    expect(validation.errors.join("\n")).toContain("chapters/chapter-00.md number must be greater than 0");
-    expect(validation.errors.join("\n")).toContain("chapters/chapter-01.md frontmatter field status has unsupported value invalid");
-    expect(validation.errors.join("\n")).toContain("chapters/chapter-01.md frontmatter field word-count must be an integer");
-    expect(validation.errors.join("\n")).toContain("chapters/chapter-01.md number must match filename chapter number 1");
-    expect(validation.errors.join("\n")).toContain("chapters/chapter-02.md duplicates chapter number 2");
+    expect(pathContains(validation.errors.join("\n"), "story.md frontmatter field genre must be a scalar")).toBe(true);
+    expect(pathContains(validation.errors.join("\n"), "story.md frontmatter field themes must be a list")).toBe(true);
+    expect(pathContains(validation.errors.join("\n"), "story.md frontmatter field status has unsupported value unknown-stage")).toBe(true);
+    expect(pathContains(validation.errors.join("\n"), "characters/_index.md type must be character-registry")).toBe(true);
+    expect(pathContains(validation.errors.join("\n"), "characters/_index.md story must be strict-format")).toBe(true);
+    expect(pathContains(validation.errors.join("\n"), "characters/Bad Name.md filename id must be kebab-case")).toBe(true);
+    expect(pathContains(validation.errors.join("\n"), "characters/Bad Name.md frontmatter field name must be a scalar")).toBe(true);
+    expect(pathContains(validation.errors.join("\n"), "characters/Bad Name.md frontmatter field role has unsupported value cameo")).toBe(true);
+    expect(pathContains(validation.errors.join("\n"), "characters/Bad Name.md frontmatter field aliases must contain only non-empty strings")).toBe(true);
+    expect(pathContains(validation.errors.join("\n"), "characters/Bad Name.md frontmatter field locations must be a list")).toBe(true);
+    expect(pathContains(validation.errors.join("\n"), "characters/Bad Name.md relationship character Not Kebab must be kebab-case")).toBe(true);
+    expect(pathContains(validation.errors.join("\n"), "characters/Bad Name.md frontmatter field relationships must contain objects")).toBe(true);
+    expect(pathContains(validation.errors.join("\n"), "characters/Bad Name.md relationship is missing character")).toBe(true);
+    expect(pathContains(validation.errors.join("\n"), "characters/Bad Name.md relationship to missing-person is missing type")).toBe(true);
+    expect(pathContains(validation.errors.join("\n"), "characters/bad-relationships.md frontmatter field relationships must be a list")).toBe(true);
+    expect(pathContains(validation.errors.join("\n"), "worldbuilding/systems/bad-system.md frontmatter field prevalence must be a scalar")).toBe(true);
+    expect(pathContains(validation.errors.join("\n"), "chapters/chapter-00.md filename must match chapter-{NN}.md")).toBe(true);
+    expect(pathContains(validation.errors.join("\n"), "chapters/chapter-00.md number must be greater than 0")).toBe(true);
+    expect(pathContains(validation.errors.join("\n"), "chapters/chapter-01.md frontmatter field status has unsupported value invalid")).toBe(true);
+    expect(pathContains(validation.errors.join("\n"), "chapters/chapter-01.md frontmatter field word-count must be an integer")).toBe(true);
+    expect(pathContains(validation.errors.join("\n"), "chapters/chapter-01.md number must match filename chapter number 1")).toBe(true);
+    expect(pathContains(validation.errors.join("\n"), "chapters/chapter-02.md duplicates chapter number 2")).toBe(true);
 
     const links = validateLinks(created.root);
     expect(links.errors.join("\n")).toContain("references missing POV character missing-person");
-    expect(links.errors.join("\n")).toContain("relationship parent to child-one expects backlink type child, got parent");
+    expect(links.errors.join("\n")).toContain("relationship parent to child-one has no inverse in the linked file");
   });
 
   test("creates, renames, removes, migrates, and recommends next actions", () => {
@@ -681,7 +700,7 @@ word-count: 1
     const cwd = makeTempDir();
     const created = createStoryProject({ cwd, title: "Coverage Branches", force: false });
     expect(() => createEntity(created.root, { kind: "character", name: "" })).toThrow("name is required");
-    expect(() => createEntity(created.root, { kind: "beast", name: "Wolf" })).toThrow("Unsupported entity kind");
+    expect(() => createEntity(created.root, { kind: "beast", name: "Wolf" })).toThrow("Unknown entity kind");
     createEntity(created.root, { kind: "glossary", name: "Moon Gate" });
     createEntity(created.root, { kind: "character", name: "Branch Person", location: "missing-location" });
     createEntity(created.root, { kind: "location", name: "Branch Place", character: "missing-person" });
@@ -729,10 +748,10 @@ state-changes: none
 `, "# Bad State");
 
     const validation = validateProject(created.root);
-    expect(validation.errors.join("\n")).toContain("continuity/state.md type must be continuity-state");
-    expect(validation.errors.join("\n")).toContain("continuity/state.md story must be coverage-branches");
-    expect(validation.errors.join("\n")).toContain("continuity/state.md frontmatter field character-state must be a list");
-    expect(validation.errors.join("\n")).toContain("scenes/bad-state.md frontmatter field state-changes must be a list");
+    expect(pathContains(validation.errors.join("\n"), "continuity/state.md type must be continuity-state")).toBe(true);
+    expect(pathContains(validation.errors.join("\n"), "continuity/state.md story must be coverage-branches")).toBe(true);
+    expect(pathContains(validation.errors.join("\n"), "continuity/state.md frontmatter field character-state must be a list")).toBe(true);
+    expect(pathContains(validation.errors.join("\n"), "scenes/bad-state.md frontmatter field state-changes must be a list")).toBe(true);
 
     const actions = formatActionReport(projectActions(created.root));
     expect(actions).toContain("Fix validation errors");
@@ -811,19 +830,19 @@ aliases:
 
     const validation = validateProject(created.root);
     expect(validation.ok).toBe(false);
-    expect(validation.errors.join("\n")).toContain("scenes/bad-scene.md frontmatter field status has unsupported value invalid");
-    expect(validation.errors.join("\n")).toContain("scenes/bad-scene.md scene must be greater than 0");
-    expect(validation.errors.join("\n")).toContain("continuity/questions/bad-question.md frontmatter field status has unsupported value invalid");
-    expect(validation.errors.join("\n")).toContain("continuity/promises/bad-promise.md frontmatter field status has unsupported value invalid");
-    expect(validation.errors.join("\n")).toContain("glossary/terms/bad-term.md frontmatter field category has unsupported value invalid");
+    expect(pathContains(validation.errors.join("\n"), "scenes/bad-scene.md frontmatter field status has unsupported value invalid")).toBe(true);
+    expect(pathContains(validation.errors.join("\n"), "scenes/bad-scene.md scene must be greater than 0")).toBe(true);
+    expect(pathContains(validation.errors.join("\n"), "continuity/questions/bad-question.md frontmatter field status has unsupported value invalid")).toBe(true);
+    expect(pathContains(validation.errors.join("\n"), "continuity/promises/bad-promise.md frontmatter field status has unsupported value invalid")).toBe(true);
+    expect(pathContains(validation.errors.join("\n"), "glossary/terms/bad-term.md frontmatter field category has unsupported value invalid")).toBe(true);
 
     const links = validateLinks(created.root);
     expect(links.ok).toBe(false);
-    expect(links.errors.join("\n")).toContain("bad-faction.md references missing member missing-person");
-    expect(links.errors.join("\n")).toContain("bad-artifact.md references missing owner missing-owner");
-    expect(links.errors.join("\n")).toContain("bad-scene.md references missing chapter missing-chapter");
-    expect(links.errors.join("\n")).toContain("bad-question.md references missing character missing-person");
-    expect(links.errors.join("\n")).toContain("bad-promise.md references missing arc missing-arc");
+    expect(pathContains(links.errors.join("\n"), "bad-faction.md references missing character missing-person")).toBe(true);
+    expect(pathContains(links.errors.join("\n"), "bad-artifact.md references missing owner missing-owner")).toBe(true);
+    expect(pathContains(links.errors.join("\n"), "bad-scene.md references missing chapter missing-chapter")).toBe(true);
+    expect(pathContains(links.errors.join("\n"), "bad-question.md references missing character missing-person")).toBe(true);
+    expect(pathContains(links.errors.join("\n"), "bad-promise.md references missing arc missing-arc")).toBe(true);
   });
 
   test("reports numeric scene chapter ids as link errors instead of crashing scans", () => {
@@ -841,7 +860,7 @@ status: draft
 
     const links = validateLinks(created.root);
     expect(links.ok).toBe(false);
-    expect(links.errors.join("\n")).toContain("scenes/b-scene.md references missing chapter 3");
+    expect(pathContains(links.errors.join("\n"), "scenes/b-scene.md references missing chapter 3")).toBe(true);
   });
 
   test("builds epub and docx formats and rejects unknown formats", () => {

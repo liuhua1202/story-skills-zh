@@ -3,7 +3,7 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { parseArgs, runCli } from "../src/cli.js";
-import { makeTempDir, memoryIo, writeMarkdown } from "./helpers.js";
+import { makeTempDir, memoryIo, pathContains, writeMarkdown } from "./helpers.js";
 
 function invoke(cwd, argv) {
   const io = memoryIo(cwd);
@@ -76,7 +76,7 @@ describe("cli", () => {
     const root = path.join(cwd, "cli-story");
     addMinimalChapter(root);
     expect(invoke(cwd, ["wordcount", root]).out).toContain("Total: 2");
-    expect(invoke(cwd, ["wordcount", root, "--write"]).out).toContain("chapters/chapter-01.md: 2");
+    expect(pathContains(invoke(cwd, ["wordcount", root, "--write"]).out, "chapters/chapter-01.md: 2")).toBe(true);
     expect(fs.readFileSync(path.join(root, "chapters", "_index.md"), "utf8")).toContain("Total Word Count: 2");
     expect(invoke(cwd, ["reindex", root]).out).toContain("Registries already up to date");
     expect(invoke(cwd, ["validate", root]).out).toContain("Project is valid");

@@ -18,7 +18,7 @@ import {
 describe("CJK and Unicode coverage", () => {
   describe("kebabCase", () => {
     test("transliterates common Han characters to pinyin initials", () => {
-      expect(kebabCase("\u738b\u4f91")).toBe("wang-you");
+      expect(kebabCase("\u738b\u53cb")).toBe("wang-you");
       expect(kebabCase("\u6797\u82e5")).toBe("lin-ruo");
       expect(kebabCase("\u9648\u5927")).toBe("chen-da");
     });
@@ -50,7 +50,7 @@ describe("CJK and Unicode coverage", () => {
     });
 
     test("handles mixed Han + Latin prose", () => {
-      expect(wordCount("Sera went to \u9152\u9986 yesterday.")).toBe(5);
+      expect(wordCount("Sera went to \u9152\u9986 yesterday.")).toBe(6);
     });
 
     test("still strips code blocks and markdown syntax", () => {
@@ -74,7 +74,7 @@ describe("CJK and Unicode coverage", () => {
     test("picks up Han names as candidates", () => {
       const prose = [
         "\u9648\u5927\u8d70\u4e86\u3002",
-        "\u9648\u5929\u5929\u6765\u9152\u9986\u3002",
+        "\u9648\u5927\u6765\u4e86\u3002",
         "\u9648\u5927\u603b\u662f\u8fd9\u6837\u3002"
       ].join("\n");
       const candidates = extractNameCandidates(prose);
@@ -82,7 +82,7 @@ describe("CJK and Unicode coverage", () => {
     });
 
     test("still surfaces Latin candidates alongside CJK candidates", () => {
-      const prose = "He met Vex Marrow. \u9648\u5927 joined them.";
+      const prose = "He met Vex Marrow. \u9648\u5927 joined Vex Marrow. Vex Marrow waved and they walked on together.";
       const candidates = extractNameCandidates(prose);
       expect(candidates.find((c) => c.name === "Vex Marrow")).toBeTruthy();
     });

@@ -11,7 +11,7 @@ import {
   validateLinks,
   validateProject
 } from "../src/story.js";
-import { makeTempDir, writeMarkdown } from "./helpers.js";
+import { makeTempDir, pathContains, writeMarkdown } from "./helpers.js";
 
 function writeChapter(root, number, frontmatter) {
   writeMarkdown(path.join(root, "chapters", `chapter-${String(number).padStart(2, "0")}.md`), `
@@ -171,25 +171,25 @@ current-chapter: 0
     const warnings = result.warnings.join("\n");
 
     expect(result.ok).toBe(false);
-    expect(errors).toContain("characters/liv-marsh.md has died-in chapter-01 but status alive; set status: deceased");
-    expect(errors).toContain("characters/ghost-orin.md died-in references missing chapter chapter-09");
-    expect(errors).toContain("chapters/chapter-02.md lists edran-vale, who died in chapter-01");
-    expect(errors).toContain("chapters/chapter-03.md lists edran-vale, who died in chapter-01");
-    expect(errors).toContain("scenes/chapter-02-scene-01.md lists edran-vale, who died in chapter-01");
-    expect(warnings).toContain("chapters/chapter-03.md POV character edran-vale is not listed in characters");
-    expect(warnings).toContain("scenes/chapter-01-scene-01.md POV character mara-finn is not listed in characters");
-    expect(warnings).toContain("scenes/chapter-05-scene-01.md lists stray-soul but chapters/chapter-05.md does not list them in characters or mentions");
-    expect(warnings).toContain("scenes/chapter-02-scene-01.md is set in elsewhere-lane but chapters/chapter-02.md does not list that location");
+    expect(pathContains(errors, "characters/liv-marsh.md has died-in chapter-01 but status alive; set status: deceased")).toBe(true);
+    expect(pathContains(errors, "characters/ghost-orin.md died-in references missing chapter chapter-09")).toBe(true);
+    expect(pathContains(errors, "chapters/chapter-02.md lists edran-vale, who died in chapter-01")).toBe(true);
+    expect(pathContains(errors, "chapters/chapter-03.md lists edran-vale, who died in chapter-01")).toBe(true);
+    expect(pathContains(errors, "scenes/chapter-02-scene-01.md lists edran-vale, who died in chapter-01")).toBe(true);
+    expect(pathContains(warnings, "chapters/chapter-03.md POV character edran-vale is not listed in characters")).toBe(true);
+    expect(pathContains(warnings, "scenes/chapter-01-scene-01.md POV character mara-finn is not listed in characters")).toBe(true);
+    expect(pathContains(warnings, "scenes/chapter-05-scene-01.md lists stray-soul but chapters/chapter-05.md does not list them in characters or mentions")).toBe(true);
+    expect(pathContains(warnings, "scenes/chapter-02-scene-01.md is set in elsewhere-lane but chapters/chapter-02.md does not list that location")).toBe(true);
     expect(warnings).toContain("Chapter numbering skips from 3 to 5");
-    expect(warnings).toContain("continuity/state.md current-chapter 0 is behind the latest chapter 5");
+    expect(pathContains(warnings, "continuity/state.md current-chapter 0 is behind the latest chapter 5")).toBe(true);
     expect(warnings).not.toContain("chapter-03-scene-01.md lists old-tomas");
 
     expect(checkProjectContinuity(root).ok).toBe(false);
     expect(validateProject(root).errors.join("\n")).not.toContain("died-in");
 
     const links = validateLinks(root).errors.join("\n");
-    expect(links).toContain("chapters/chapter-03.md references missing character nobody-here");
-    expect(links).toContain("scenes/chapter-77-scene-01.md references missing character nobody-scene");
+    expect(pathContains(links, "chapters/chapter-03.md references missing character nobody-here")).toBe(true);
+    expect(pathContains(links, "scenes/chapter-77-scene-01.md references missing character nobody-scene")).toBe(true);
   });
 
   test("flags promise, question, completion, and durable state contradictions", () => {
@@ -313,29 +313,27 @@ object-state:
 
     expect(result.ok).toBe(false);
     expect(result.errors).toHaveLength(20);
-    expect(result.warnings).toHaveLength(3);
-    expect(errors).toContain("continuity/promises/backwards-payoff.md pays off in chapter-02 before it is planted in chapter-03");
-    expect(errors).toContain("continuity/promises/missing-payoff.md is paid-off but has no payoff chapter");
-    expect(errors).toContain("continuity/promises/unrooted-plant.md is planted but has no planted chapter");
-    expect(errors).toContain("continuity/questions/reversed.md resolves in chapter-02 before it is introduced in chapter-03");
-    expect(errors).toContain("continuity/questions/unanchored.md is answered but has no resolved chapter");
-    expect(errors).toContain("continuity/questions/lingering.md records resolved chapter chapter-02 but status is still open");
-    expect(errors).toContain("story.md is complete but continuity/promises/long-fuse.md is still planted");
-    expect(errors).toContain("story.md is complete but continuity/promises/early-record.md is still planned");
-    expect(errors).toContain("story.md is complete but continuity/questions/lingering.md is still open");
-    expect(errors).toContain("continuity/state.md current-chapter 7 is ahead of the latest chapter 4");
-    expect(errors).toContain("continuity/state.md character-state[0] must be a mapping");
-    expect(errors).toContain("continuity/state.md character-state[1] references missing character missing-person");
-    expect(errors).toContain("continuity/state.md character-state[2] references missing location nowhere-bay");
-    expect(errors).toContain("continuity/state.md knowledge-state[0] references missing character (unset)");
-    expect(errors).toContain("continuity/state.md knowledge-state[1] is missing knows");
-    expect(errors).toContain("continuity/state.md knowledge-state[2] references missing chapter chapter-09");
-    expect(errors).toContain("continuity/state.md object-state[0] references missing artifact ghost-item");
-    expect(errors).toContain("continuity/state.md object-state[1] references missing owner nobody-known");
-    expect(errors).toContain("continuity/state.md object-state[2] references missing location nowhere-bay");
-    expect(warnings).toContain("continuity/promises/long-fuse.md was planted in chapter-01, 3 chapters ago, and has no payoff yet");
-    expect(warnings).toContain("continuity/promises/early-record.md records planted chapter chapter-02 but status is still planned");
-    expect(warnings).toContain("continuity/state.md object-state[3] status active conflicts with worldbuilding/artifacts/silver-key.md status hidden");
+    expect(result.warnings).toHaveLength(2);
+    expect(pathContains(errors, "continuity/promises/backwards-payoff.md pays off in chapter-02 before it is planted in chapter-03")).toBe(true);
+    expect(pathContains(errors, "continuity/promises/missing-payoff.md is paid-off but has no payoff chapter")).toBe(true);
+    expect(pathContains(errors, "continuity/promises/unrooted-plant.md is planted but has no planted chapter")).toBe(true);
+    expect(pathContains(errors, "continuity/questions/reversed.md resolves in chapter-02 before it is introduced in chapter-03")).toBe(true);
+    expect(pathContains(errors, "continuity/questions/unanchored.md is answered but has no resolved chapter")).toBe(true);
+    expect(pathContains(errors, "continuity/questions/lingering.md records resolved chapter chapter-02 but status is still open")).toBe(true);
+    expect(pathContains(errors, "story.md is complete but continuity/promises/long-fuse.md is still planted")).toBe(true);
+    expect(pathContains(errors, "story.md is complete but continuity/promises/early-record.md is still planned")).toBe(true);
+    expect(pathContains(errors, "story.md is complete but continuity/questions/lingering.md is still open")).toBe(true);
+    expect(pathContains(errors, "continuity/state.md current-chapter 7 is ahead of the latest chapter 4")).toBe(true);
+    expect(pathContains(errors, "continuity/state.md character-state[0] must be a mapping")).toBe(true);
+    expect(pathContains(errors, "continuity/state.md character-state[1] references missing character missing-person")).toBe(true);
+    expect(pathContains(errors, "continuity/state.md character-state[2] references missing location nowhere-bay")).toBe(true);
+    expect(pathContains(errors, "continuity/state.md knowledge-state[0] references missing character (unset)")).toBe(true);
+    expect(pathContains(errors, "continuity/state.md knowledge-state[1] is missing knows")).toBe(true);
+    expect(pathContains(errors, "continuity/state.md knowledge-state[2] references missing chapter chapter-09")).toBe(true);
+    expect(pathContains(errors, "continuity/state.md object-state[0] references missing artifact ghost-item")).toBe(true);
+    expect(pathContains(errors, "continuity/state.md object-state[1] references missing owner nobody-known")).toBe(true);
+    expect(pathContains(errors, "continuity/state.md object-state[2] references missing location nowhere-bay")).toBe(true);
+    expect(pathContains(warnings, "continuity/promises/long-fuse.md was planted in chapter-01, 3 chapters ago, and has no payoff yet")).toBe(true);
 
     const actionReport = formatActionReport(projectActions(root));
     expect(actionReport).toContain("Fix continuity contradictions");

@@ -1624,7 +1624,7 @@ function nextSceneNumber(project, chapter) {
 
 function ensureDirectory(directory, changed, root) {
   if (!fs.existsSync(directory)) {
-    assertLexicallyInsideRoot(directory, root, lang);
+    assertLexicallyInsideRoot(directory, root, currentLang());
     fs.mkdirSync(directory, { recursive: true });
     assertSafeProjectDirectory(directory, root);
     changed.push(directory);
@@ -2441,7 +2441,7 @@ function validateRelationships(data, label, errors, lang) {
     if (typeof relationship.character !== "string" || relationship.character.trim() === "") {
       errors.push(td(lang, "diagRelationshipMissingCharacter", label));
     } else if (relationship.character !== kebabCase(relationship.character)) {
-      errors.push(td(lang, "diagFilenameNotKebab", label));
+      errors.push(td(lang, "diagRelationshipBadKebab", label, relationship.character));
     }
 
     if (typeof relationship.type !== "string" || relationship.type.trim() === "") {
